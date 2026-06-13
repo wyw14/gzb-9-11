@@ -41,3 +41,11 @@ export function createExchange(myItemId, targetItemId) {
 export function getMyExchanges(userId) {
   return api.get('/exchanges/my', { params: { userId } }).then(res => res.data)
 }
+
+export function getTagStatistics() {
+  return api.get('/tags/statistics').then(res => res.data)
+}
+
+export function getItemsByTag(tag, userId) {
+  return api.get('/items', { params: { tag, userId } }).then(res => res.data)
+}

@@ -77,26 +77,6 @@ async function generateBlurredImage(originalPath) {
   return '/uploads/' + blurredFilename;
 }
 
-app.get('/api/items', (req, res) => {
-  const { userId } = req.query;
-  let items = readItems();
-
-  if (userId) {
-    items = items.filter(item => item.ownerId !== userId);
-  }
-
-  const publicItems = items.map(item => ({
-    id: item.id,
-    category: item.category,
-    mysteryTags: item.mysteryTags,
-    image: getPublicImage(item),
-    createdAt: item.createdAt,
-    status: item.status
-  }));
-
-  res.json(publicItems);
-});
-
 app.get('/api/items/my', (req, res) => {
   const { userId } = req.query;
   if (!userId) {
@@ -414,6 +394,63 @@ app.get('/uploads/:filename', async (req, res) => {
     console.error('动态生成模糊图失败:', err);
     return res.redirect(PLACEHOLDER_IMAGE);
   }
+});
+
+app.get('/api/tags/statistics', (req, res) => {
+  const items = readItems();
+  const tagCount = {};
+
+  items.forEach(item => {
+    if (Array.isArray(item.mysteryTags)) {
+      item.mysteryTags.forEach(tag => {
+        if (tag && tag.trim()) {
+          const trimmed = tag.trim();
+          tagCount[trimmed] = (tagCount[trimmed] || 0) + 1;
+        }
+      });
+    }
+  });
+
+  const tags = Object.entries(tagCount)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
+
+  const totalTags = tags.length;
+  const maxCount = tags.length > 0 ? tags[0].count : 0;
+
+  res.json({
+    tags,
+    totalTags,
+    maxCount,
+    totalItems: items.length
+  });
+});
+
+app.get('/api/items', (req, res) => {
+  const { userId, tag } = req.query;
+  let items = readItems();
+
+  if (userId) {
+    items = items.filter(item => item.ownerId !== userId);
+  }
+
+  if (tag) {
+    items = items.filter(item =>
+      Array.isArray(item.mysteryTags) &&
+      item.mysteryTags.some(t => t && t.trim() === tag.trim())
+    );
+  }
+
+  const publicItems = items.map(item => ({
+    id: item.id,
+    category: item.category,
+    mysteryTags: item.mysteryTags,
+    image: getPublicImage(item),
+    createdAt: item.createdAt,
+    status: item.status
+  }));
+
+  res.json(publicItems);
 });
 
 app.listen(PORT, () => {
