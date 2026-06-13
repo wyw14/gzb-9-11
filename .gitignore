@@ -48,3 +48,26 @@ server/uploads/
 **/任务提示词.md
 任务提示词.md
 **/任务提示词.md
+# Additional caches and local artifacts
+.eslintcache
+*.tsbuildinfo
+.pnpm-store/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# Local databases and backups
+*.sqlite
+*.sqlite3
+*.db
+*.bak
+*.backup
+
+# Large binary/media artifacts
+*.exe
+*.dll
+*.bin
+*.pdf
+*.wav
+*.mp3
